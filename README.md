@@ -3,7 +3,13 @@
 
 ## Description
 
-Describe the project in 2-3 sentences (You can use more). 
+codeforces live cf-rating building.
+
+Project to estimate difficulty rating for codeforces problems.
+
+Each codeforces problem is solved by x number of people. That have rating y. We can check what is median (average?) rating of people who solved task. Build possible rating for each problem that was prompted by the user. Possible extensions: Possibility of personal review of the problem. 
+
+User checks problem and asks its rating. Then, he decides to solve it with the timer. Then, adapting to his internal rating and time to solve the problem app can estimate rating of this problem. It can be adjusted by the user.
 
 ## Setup
 
