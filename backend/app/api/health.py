@@ -1,4 +1,5 @@
 """Health check endpoints."""
+
 from __future__ import annotations
 
 from flask_restx import Namespace, Resource

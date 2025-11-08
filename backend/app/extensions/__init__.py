@@ -1,4 +1,5 @@
 """Shared Flask extensions are instantiated here."""
+
 from __future__ import annotations
 
 from flask_cors import CORS

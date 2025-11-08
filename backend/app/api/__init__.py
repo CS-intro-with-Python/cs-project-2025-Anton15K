@@ -1,4 +1,5 @@
 """API blueprint and namespace registration."""
+
 from __future__ import annotations
 
 from flask import Blueprint

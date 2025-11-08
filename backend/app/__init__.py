@@ -1,4 +1,5 @@
 """Application factory for the Codeforces difficulty estimation backend."""
+
 from __future__ import annotations
 
 from flask import Flask
