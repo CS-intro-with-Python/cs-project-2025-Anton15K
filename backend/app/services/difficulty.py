@@ -1,8 +1,8 @@
 """Difficulty estimation utilities."""
 from __future__ import annotations
 
+from collections.abc import Iterable
 from statistics import median
-from typing import Iterable
 
 import numpy as np
 

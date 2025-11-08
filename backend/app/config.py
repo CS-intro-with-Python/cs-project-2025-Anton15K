@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Type
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,14 +38,14 @@ class ProductionConfig(BaseConfig):
     DEBUG = False
 
 
-CONFIG_BY_NAME: dict[str, Type[BaseConfig]] = {
+CONFIG_BY_NAME: dict[str, type[BaseConfig]] = {
     "development": DevelopmentConfig,
     "testing": TestingConfig,
     "production": ProductionConfig,
 }
 
 
-def get_config(config_name: str | None) -> Type[BaseConfig]:
+def get_config(config_name: str | None) -> type[BaseConfig]:
     """Return the config class matching the provided name."""
     if not config_name:
         config_name = os.environ.get("FLASK_ENV", "development")

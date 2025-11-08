@@ -23,7 +23,14 @@ def create_app(config_name: str | None = None) -> Flask:
 
 def _register_extensions(app: Flask) -> None:
     """Initialize Flask extensions."""
-    cors.init_app(app, resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", "*")}})
+    cors.init_app(
+        app,
+        resources={
+            r"/api/*": {
+                "origins": app.config.get("CORS_ORIGINS", "*"),
+            }
+        },
+    )
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
