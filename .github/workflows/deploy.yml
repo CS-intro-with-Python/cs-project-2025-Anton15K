@@ -1,0 +1,67 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build application images
+        run: docker compose build
+
+      - name: Set up Node.js (for Railway CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Authenticate with Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --token "$RAILWAY_TOKEN"
+
+      - name: Configure Railway project
+        env:
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_ENVIRONMENT: ${{ secrets.RAILWAY_ENVIRONMENT }}
+        run: |
+          if [ -n "$RAILWAY_PROJECT_ID" ]; then
+            railway project use "$RAILWAY_PROJECT_ID"
+          fi
+          if [ -n "$RAILWAY_ENVIRONMENT" ]; then
+            railway environment switch "$RAILWAY_ENVIRONMENT"
+          fi
+
+      - name: Deploy services
+        env:
+          RAILWAY_DEPLOY_COMMAND: ${{ secrets.RAILWAY_DEPLOY_COMMAND }}
+        run: |
+          if [ -n "$RAILWAY_DEPLOY_COMMAND" ]; then
+            eval "$RAILWAY_DEPLOY_COMMAND"
+          else
+            railway up --ci
+          fi
+
+      - name: Notify on missing secrets
+        if: failure()
+        run: |
+          echo "Deployment failed. Verify that RAILWAY_TOKEN, RAILWAY_PROJECT_ID, and optional RAILWAY_ENVIRONMENT/RAILWAY_DEPLOY_COMMAND secrets are configured." >&2
