@@ -61,16 +61,6 @@ GitHub Actions definitions live in `.github/workflows/`:
 - `frontend-ci.yml` &mdash; installs frontend dependencies, runs ESLint/Vitest, and builds the Vue app.
 - `deploy.yml` &mdash; builds Docker images and deploys to Railway on pushes to `main`. Configure the secrets `RAILWAY_TOKEN`, `RAILWAY_PROJECT_ID`, optional `RAILWAY_ENVIRONMENT`, and optional `RAILWAY_DEPLOY_COMMAND` before enabling the job.
 
-### Railway Database Configuration
-
-Railway exposes managed PostgreSQL instances through the `DATABASE_PUBLIC_URL` environment variable. The backend now prioritizes this variable, automatically normalizing it for SQLAlchemy. Before deploying, add the connection string provided by Railway to the environment settings:
-
-```bash
-DATABASE_PUBLIC_URL=postgresql://postgres:dQCmjjxcUUVrItttlHhGmAMohLWGRXJc@shinkansen.proxy.rlwy.net:26920/railway
-```
-
-`DATABASE_URL` remains a supported fallback for local tooling or legacy setups.
-
 ### Additional Documentation
 
 - Detailed step-by-step implementation guidance lives in `instruct/IMPLEMENTATION_GUIDE.md`. Keep it updated as architecture decisions evolve.
@@ -78,7 +68,6 @@ DATABASE_PUBLIC_URL=postgresql://postgres:dQCmjjxcUUVrItttlHhGmAMohLWGRXJc@shink
 The `docker-compose.yml` defines the following services:
 - Flask API
 - Vue frontend
-- Database (PostgreSQL or MongoDB)
 
 ## Requirements
 
@@ -86,12 +75,11 @@ The project uses the following technologies, tools, and languages:
 
 | Layer | Tools / Libraries |
 |-------|--------------------|
-| Backend | Flask, Flask-SQLAlchemy, Flask-Login, Flask-CORS, Flask-RESTX, Pytest |
+| Backend | Flask, Flask-Login, Flask-CORS, Pytest |
 | Frontend | Vue.js 3, Vue Router, Axios, Tailwind CSS or Bootstrap |
-| Database | PostgreSQL (via SQLAlchemy ORM) or MongoDB |
 | Authentication | Flask-Login |
 | Statistical Analysis | NumPy, Pandas, SciPy |
-| API Documentation | Swagger (via Flask-RESTX) |
+| API Documentation | Not published |
 | CI/CD | GitHub Actions, Railway.app |
 | Containerization | Docker, Docker Compose |
 
@@ -106,7 +94,7 @@ The system uses a RESTful architecture for client-server communication.
 * Timer feature for tracking problem-solving duration
 * Adaptive difficulty adjustment based on user performance
 * Optional user feedback and review system
-* RESTful API documented using Swagger
+* RESTful API endpoints
 * Vue-based single-page frontend application
 * Responsive and modular user interface
 * Automated CI/CD integration for testing and deployment
@@ -119,8 +107,8 @@ The system uses a RESTful architecture for client-server communication.
 
 ## Success Criteria
 
-* REST API is functional, versioned, and documented with Swagger
-* Application runs in Docker containers with working backend, frontend, and database
+* REST API is functional and versioned
+* Application runs in Docker containers with working backend and frontend
 * Vue frontend interacts successfully with Flask backend
 * CI pipeline builds, tests, and validates all components automatically
 * Continuous deployment from the `main` branch is configured and functional

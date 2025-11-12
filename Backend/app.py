@@ -7,17 +7,13 @@ payloads and document their intended behavior.
 
 Run locally for demo:
     flask --app Backend.app:create_app run --port=5001
-
-Swagger UI:
-    http://localhost:5001/api/v1/docs
 """
 from __future__ import annotations
 
-from flask import Flask, Blueprint
+from flask import Flask
 
 from .config import Config
-from .extensions import api, cors, db, login_manager
-from .models import Attempt, Problem, RatingAdjustment, User  # noqa: F401
+from .extensions import cors, login_manager
 
 
 API_PREFIX = "/api/v1"
@@ -29,34 +25,27 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
 
     # Init extensions
     cors.init_app(app, resources={r"*": {"origins": app.config.get("CORS_ORIGINS", "*")}})
-    db.init_app(app)
     login_manager.init_app(app)
 
-    # Mount RESTX Api on a blueprint to keep prefix clean
-    api_bp = Blueprint("api", __name__, url_prefix=API_PREFIX)
-    api.init_app(api_bp)
-    app.register_blueprint(api_bp)
+    # Register API blueprints under the versioned prefix
+    from .api.health import bp as health_bp
+    from .api.auth import bp as auth_bp
+    from .api.users import bp as users_bp
+    from .api.problems import bp as problems_bp
+    from .api.attempts import bp as attempts_bp
+    from .api.ratings import bp as ratings_bp
 
-    # Register namespaces
-    from .api.health import ns as health_ns
-    from .api.auth import ns as auth_ns
-    from .api.users import ns as users_ns
-    from .api.problems import ns as problems_ns
-    from .api.attempts import ns as attempts_ns
-    from .api.ratings import ns as ratings_ns
-
-    api.add_namespace(health_ns)
-    api.add_namespace(auth_ns, path="/auth")
-    api.add_namespace(users_ns, path="/users")
-    api.add_namespace(problems_ns, path="/problems")
-    api.add_namespace(attempts_ns, path="/attempts")
-    api.add_namespace(ratings_ns, path="/ratings")
+    app.register_blueprint(health_bp, url_prefix=f"{API_PREFIX}/health")
+    app.register_blueprint(auth_bp, url_prefix=f"{API_PREFIX}/auth")
+    app.register_blueprint(users_bp, url_prefix=f"{API_PREFIX}/users")
+    app.register_blueprint(problems_bp, url_prefix=f"{API_PREFIX}/problems")
+    app.register_blueprint(attempts_bp, url_prefix=f"{API_PREFIX}/attempts")
+    app.register_blueprint(ratings_bp, url_prefix=f"{API_PREFIX}/ratings")
 
     @app.get("/")
-    def index():  # pragma: no cover - trivial
+    def index():
         return {
-            "name": "CS 2025 API",
-            "docs": f"{API_PREFIX}/docs",
+            "name": "CF 2025 API",
             "health": f"{API_PREFIX}/health",
         }
 

@@ -11,32 +11,22 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from flask_restx import Namespace, Resource, fields
+from flask import Blueprint, jsonify
 
-ns = Namespace("health", description="Service health and diagnostics")
-
-health_model = ns.model(
-    "Health",
-    {
-        "status": fields.String(example="ok", description="Service status indicator"),
-        "time": fields.DateTime(dt_format="iso8601", description="Server time (UTC)"),
-        "version": fields.String(example="1.0.0", description="API semantic version"),
-    },
-)
+bp = Blueprint("health", __name__)
 
 
-@ns.route("")
-class HealthResource(Resource):
-    @ns.doc("health_check", description="Simple health check endpoint")
-    @ns.marshal_with(health_model)
-    def get(self):
-        """Return service status without requiring any dependencies.
+@bp.get("")
+def health_check():
+    """Return service status without requiring any dependencies.
 
-        Stable contract for monitoring. In the future, add more fields like
-        upstream status or git commit hash as needed.
-        """
-        return {
+    Stable contract for monitoring. In the future, add more fields like
+    upstream status or git commit hash as needed.
+    """
+    return jsonify(
+        {
             "status": "ok",
             "time": datetime.utcnow().isoformat() + "Z",
             "version": "1.0.0",
         }
+    )
