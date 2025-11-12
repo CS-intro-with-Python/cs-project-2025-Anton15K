@@ -50,7 +50,7 @@ npm run dev
 ### Docker Setup
 
 ```bash
-docker-compose up --build
+TODO
 ```
 
 ### CI/CD Workflows
@@ -60,6 +60,16 @@ GitHub Actions definitions live in `.github/workflows/`:
 - `backend-ci.yml` &mdash; installs backend dependencies, runs Ruff/Black, and executes Pytest with coverage export.
 - `frontend-ci.yml` &mdash; installs frontend dependencies, runs ESLint/Vitest, and builds the Vue app.
 - `deploy.yml` &mdash; builds Docker images and deploys to Railway on pushes to `main`. Configure the secrets `RAILWAY_TOKEN`, `RAILWAY_PROJECT_ID`, optional `RAILWAY_ENVIRONMENT`, and optional `RAILWAY_DEPLOY_COMMAND` before enabling the job.
+
+### Railway Database Configuration
+
+Railway exposes managed PostgreSQL instances through the `DATABASE_PUBLIC_URL` environment variable. The backend now prioritizes this variable, automatically normalizing it for SQLAlchemy. Before deploying, add the connection string provided by Railway to the environment settings:
+
+```bash
+DATABASE_PUBLIC_URL=postgresql://postgres:dQCmjjxcUUVrItttlHhGmAMohLWGRXJc@shinkansen.proxy.rlwy.net:26920/railway
+```
+
+`DATABASE_URL` remains a supported fallback for local tooling or legacy setups.
 
 ### Additional Documentation
 

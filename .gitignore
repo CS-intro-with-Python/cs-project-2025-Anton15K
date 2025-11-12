@@ -13,26 +13,10 @@ venv/
 .env.development
 .env.production
 
-# Flask
-instance/
-.mypy_cache/
 
-# Node
-node_modules/
-dist/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
 
 # Editor
 .idea/
 .vscode/
 .DS_Store
 
-# Coverage
-htmlcov/
-.coverage
-coverage.xml
-pytest_cache/
