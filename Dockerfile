@@ -1,19 +1,14 @@
 
 FROM python:3.12-slim
 
-
-
 # Create app directory
 WORKDIR /app
 
 RUN pip install --upgrade pip
 
-# Install Python dependencies (no requirements.txt yet)
-RUN pip install \
-    Flask \
-    Flask-CORS \
-    Flask-Login \
-    requests
+# Copy dependency specification and install Python dependencies
+COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend source
 COPY Backend ./Backend

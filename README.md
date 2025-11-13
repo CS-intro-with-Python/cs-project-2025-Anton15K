@@ -3,115 +3,118 @@
 
 ## Description
 
-This project is a full-stack web application designed to estimate the difficulty rating of Codeforces problems based on the ratings of users who solved them.
+This project is a backend web service that estimates the difficulty rating of Codeforces problems based on the ratings of users who solved them.
 
-Each Codeforces problem is solved by a number of users with varying ratings. By analyzing these solver ratings, the system can estimate a possible difficulty rating for each problem.
+Each Codeforces problem is solved by users with varying ratings. By analyzing these solver ratings, the system can estimate a possible difficulty rating for each problem and later adjust it based on user feedback and performance.
 
-Users can check a problem’s estimated rating, attempt the problem using a timer, and then adjust the difficulty rating based on their personal performance.  
-The application provides a personalized and adaptive difficulty estimation based on user statistics, solve time, and internal rating.
+The backend is implemented with Flask and exposes a RESTful API for:
 
-The backend is implemented with Flask and provides a RESTful API.  
-The frontend is built with Vue.js and communicates with the Flask API using Axios.  
-All components are containerized with Docker, and the project includes continuous integration (CI) and continuous deployment (CD) via GitHub Actions and Railway.app.
+- Managing users and authentication
+- Managing problems and attempts
+- Estimating and updating problem difficulty ratings
+- Reporting health status for monitoring
 
-## Setup
-
-The application can be run locally or through Docker.
+The current repository contains only the backend service; a frontend can be built separately to consume this API.
 
 ## Project Structure
 
 ```text
-backend/                # Flask application source and tests
-frontend/               # Vue 3 single-page application
-instruct/               # Technical docs (e.g., implementation guide)
-infrastructure/         # Deployment and ops assets
-docker-compose.yml      # Local development stack definition
+Backend/                 # Flask application source code
+	app.py                 # Application factory / entry point
+	config.py              # Configuration settings
+	extensions.py          # Flask extensions initialization
+	models.py              # Database models (if using ORM)
+	api/                   # REST API blueprints
+		auth.py              # Authentication endpoints
+		users.py             # User management endpoints
+		problems.py          # Problem-related endpoints
+		attempts.py          # Attempt-related endpoints
+		ratings.py           # Rating adjustment endpoints
+		health.py            # Health check endpoint
+	entities/              # Domain entities
+		user.py
+		problem.py
+		attempt.py
+		rating_adjustment.py
+	models/                # Additional models module (if needed)
+
+Dockerfile               # Container image definition for the backend
+scripts/
+	test_user_requests.py  # Simple script to exercise user-related endpoints
 ```
 
-### Local Setup
+## Local Setup
+
+### Prerequisites
+
+- Python 3.10+ (recommended)
+- `pip` and `venv`
+- (Optional) Docker, if you prefer running the service in a container
+
+### Backend Setup (without Docker)
 
 ```bash
 # Clone repository
 git clone <your-repo-url> && cd cs-project-2025-Anton15K
 
-# Backend setup
-cd backend
+# Create and activate virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements-dev.txt
-flask --app app:create_app() run --port=5001
 
-# Frontend setup
-cd ../frontend
-npm install
-npm run dev
+# Install dependencies
+pip install -r requirements.txt  # or requirements-dev.txt if present
+
+# Run the Flask app (adjust as needed based on app factory)
+cd Backend
+export FLASK_APP=app.py
+export FLASK_ENV=development
+flask run --port 5001
 ```
 
-### Docker Setup
+Once running, the API should be available at `http://localhost:5001`.
+
+## Running with Docker
+
+The repository includes a `Dockerfile` for building a backend image.
 
 ```bash
-TODO
+cd cs-project-2025-Anton15K
+
+# Build the image
+docker build -t cs-2025-backend .
+
+# Run the container
+docker run --rm -p 5001:5001 cs-2025-backend
 ```
 
-### CI/CD Workflows
+After the container starts, the API should be accessible at `http://localhost:5001`.
 
-GitHub Actions definitions live in `.github/workflows/`:
+## API Overview
 
-- `backend-ci.yml` &mdash; installs backend dependencies, runs Ruff/Black, and executes Pytest with coverage export.
-- `frontend-ci.yml` &mdash; installs frontend dependencies, runs ESLint/Vitest, and builds the Vue app.
-- `deploy.yml` &mdash; builds Docker images and deploys to Railway on pushes to `main`. Configure the secrets `RAILWAY_TOKEN`, `RAILWAY_PROJECT_ID`, optional `RAILWAY_ENVIRONMENT`, and optional `RAILWAY_DEPLOY_COMMAND` before enabling the job.
+The backend is organized into blueprints under `Backend/api/`:
 
-### Additional Documentation
+- `auth` &mdash; login, registration, and authentication-related operations
+- `users` &mdash; CRUD operations for users
+- `problems` &mdash; listing and retrieving Codeforces problems with estimated ratings
+- `attempts` &mdash; recording user attempts and solve times
+- `ratings` &mdash; adjusting and recalculating problem difficulty ratings
+- `health` &mdash; simple health check endpoint (e.g. for uptime monitoring)
 
-- Detailed step-by-step implementation guidance lives in `instruct/IMPLEMENTATION_GUIDE.md`. Keep it updated as architecture decisions evolve.
+Refer to the docstrings and route definitions in these modules for the most up-to-date request/response formats.
 
-The `docker-compose.yml` defines the following services:
-- Flask API
-- Vue frontend
+## Development Notes
 
-## Requirements
+- Keep new endpoints grouped logically under the existing blueprints in `Backend/api/`.
+- Domain logic that is not tied to Flask should live in `Backend/entities/`.
+- If you introduce a database or ORM, extend `Backend/models.py` or `Backend/models/` accordingly and update configuration in `Backend/config.py`.
 
-The project uses the following technologies, tools, and languages:
+## Scripts
 
-| Layer | Tools / Libraries                                      |
-|-------|--------------------------------------------------------|
-| Backend | Flask, Flask-Login, Flask-CORS, Pytest                 |
-| Frontend | Vue.js 3, Vue Router, Axios, Tailwind CSS or Bootstrap |
-| Authentication | Flask-Login                                            |
-| Statistical Analysis | NumPy, Pandas, SciPy                                   |
-| API Documentation | Swagger?                                               |
-| CI/CD | GitHub Actions, Railway.app                            |
-| Containerization | Docker, Docker Compose                                 |
+The `scripts/test_user_requests.py` script can be used as a simple manual test harness for exercising user-related endpoints (e.g. registration and login). Adjust URLs and payloads inside the script if you change API paths or ports.
 
-The backend handles data processing, authentication, and API endpoints.  
-The frontend serves as a browser-based interface built with Vue.js, interacting with the Flask REST API.  
-The system uses a RESTful architecture for client-server communication.
+## Future Work
 
-## Features
+- Add automated tests for API endpoints (e.g. with Pytest and Flask's test client).
+- Document each endpoint (OpenAPI/Swagger or similar) and provide example requests.
+- Add CI workflows for linting, testing, and building the Docker image.
 
-* User authentication with registration, login, and logout
-* Difficulty rating estimation for Codeforces problems
-* Timer feature for tracking problem-solving duration
-* Adaptive difficulty adjustment based on user performance
-* Optional user feedback and review system
-* RESTful API endpoints
-* Vue-based single-page frontend application
-* Responsive and modular user interface
-* Automated CI/CD integration for testing and deployment
-
-## Git
-
-- `main`: Stable production-ready branch  
-- `dev`: Active development branch  
-- `feature/*`: Feature-specific branches (e.g., `feature/login`)
-
-## Success Criteria
-
-* REST API is functional and versioned
-* Application runs in Docker containers with working backend and frontend
-* Vue frontend interacts successfully with Flask backend
-* CI pipeline builds, tests, and validates all components automatically
-* Continuous deployment from the `main` branch is configured and functional
-* Authentication and authorization features work as expected
-* Rating estimation and adjustment logic produce reasonable results
-* The README provides complete setup, testing, and deployment instructions
