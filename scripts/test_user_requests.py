@@ -61,22 +61,14 @@ def wait_for_health(sess: requests.Session, base_url: str, timeout_sec: float = 
 
 
 def main(argv: Optional[List[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Simple requests-based test for CS 2025 API")
-    parser.add_argument("--base-url", default=DEFAULT_BASE_URL, help="Base URL where the API is running")
-    parser.add_argument("--no-wait", action="store_true", help="Do not wait for the server to become healthy")
-    parser.add_argument("--verbose", "-v", action="store_true", help="Print response bodies (truncated)")
-    args = parser.parse_args(argv)
 
-    base = args.base_url
+
+    base = "http://127.0.0.1:5001"
 
     sess = requests.Session()
     sess.headers.update({"Accept": "application/json"})
 
-    if not args.no_wait:
-        print(f"Waiting for server health at {base}{API_PREFIX}/health ...", flush=True)
-        if not wait_for_health(sess, base):
-            print("Server did not become healthy in time.")
-            return 2
+    time.sleep(2)
 
     checks: List[Check] = [
         Check("Index", "GET", "/", 200),
@@ -107,10 +99,6 @@ def main(argv: Optional[List[str]] = None) -> int:
             ok = status == chk.expected_status
             icon = "✓" if ok else "✗"
             print(f"[{icon}] {chk.name:<22} {chk.method} {chk.path} -> {status} (expected {chk.expected_status})")
-            if args.verbose:
-                # Truncate overly long responses for readability
-                tb = body if len(body) <= 800 else body[:800] + "...\n[truncated]"
-                print(tb)
             if ok:
                 passed += 1
             else:
