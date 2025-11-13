@@ -1,18 +1,3 @@
-#!/usr/bin/env python3
-"""
-Simpler "test user" that verifies all API endpoints are reachable using the
-popular 'requests' library for clarity and brevity.
-
-Usage:
-    python scripts/test_user_requests.py [--base-url http://localhost:5001] [--no-wait] [-v]
-
-Notes:
-- Requires 'requests'. Install it with:  pip install requests
-- Exits non-zero if any check fails.
-"""
-from __future__ import annotations
-
-import argparse
 import sys
 import time
 from dataclasses import dataclass
