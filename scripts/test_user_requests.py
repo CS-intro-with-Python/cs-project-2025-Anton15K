@@ -8,7 +8,6 @@ import requests
 
 DEFAULT_BASE_URL = "http://localhost:5001"
 API_PREFIX = "/api/v1"
-TIMEOUT = 8  # seconds per HTTP call
 
 
 @dataclass
@@ -24,7 +23,7 @@ def make_request(sess: requests.Session, base_url: str, method: str, path: str, 
     url = base_url.rstrip("/") + path
     method = method.upper()
     try:
-        resp = sess.request(method, url, json=body, timeout=TIMEOUT)
+        resp = sess.request(method, url, json=body)
         # We don't raise for status so we can compare expected vs actual cleanly
         content = resp.text if (resp.headers.get("Content-Type", "").startswith("application/json") or resp.text) else ""
         return resp.status_code, content
@@ -45,7 +44,7 @@ def wait_for_health(sess: requests.Session, base_url: str, timeout_sec: float = 
     return False
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main() -> int:
 
 
     base = "http://127.0.0.1:5001"
