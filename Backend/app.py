@@ -1,14 +1,3 @@
-"""Flask application factory and API registration.
-
-This is a minimal backend scaffold based on the README. It exposes a
-versioned REST API with endpoint stubs and simple data models. No real
-persistence or authentication is wired yet; endpoints return example
-payloads and document their intended behavior.
-
-Run locally for demo:
-    flask --app Backend.app:create_app run --port=5001
-"""
-from __future__ import annotations
 
 from flask import Flask
 

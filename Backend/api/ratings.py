@@ -1,13 +1,3 @@
-"""Rating adjustment endpoints (stubs).
-
-Purpose:
-- Allow users to submit feedback after solving a problem to adjust its estimated difficulty.
-
-Future behavior:
-- Persist adjustments, recalculate aggregate estimated rating per problem,
-  and personalize estimates per user based on performance history.
-"""
-from __future__ import annotations
 
 from flask import Blueprint, jsonify, request
 

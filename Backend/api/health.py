@@ -1,13 +1,3 @@
-"""Health check endpoints.
-
-Purpose:
-- Provide a quick way to verify the API service is up and reachable.
-- Used by uptime checks, load balancers, and CI smoke tests.
-
-Behavior (future):
-- May expand to include dependency checks (DB, cache) and version info.
-"""
-from __future__ import annotations
 
 from datetime import datetime
 

@@ -73,15 +73,15 @@ The `docker-compose.yml` defines the following services:
 
 The project uses the following technologies, tools, and languages:
 
-| Layer | Tools / Libraries |
-|-------|--------------------|
-| Backend | Flask, Flask-Login, Flask-CORS, Pytest |
+| Layer | Tools / Libraries                                      |
+|-------|--------------------------------------------------------|
+| Backend | Flask, Flask-Login, Flask-CORS, Pytest                 |
 | Frontend | Vue.js 3, Vue Router, Axios, Tailwind CSS or Bootstrap |
-| Authentication | Flask-Login |
-| Statistical Analysis | NumPy, Pandas, SciPy |
-| API Documentation | Not published |
-| CI/CD | GitHub Actions, Railway.app |
-| Containerization | Docker, Docker Compose |
+| Authentication | Flask-Login                                            |
+| Statistical Analysis | NumPy, Pandas, SciPy                                   |
+| API Documentation | Swagger?                                               |
+| CI/CD | GitHub Actions, Railway.app                            |
+| Containerization | Docker, Docker Compose                                 |
 
 The backend handles data processing, authentication, and API endpoints.  
 The frontend serves as a browser-based interface built with Vue.js, interacting with the Flask REST API.  

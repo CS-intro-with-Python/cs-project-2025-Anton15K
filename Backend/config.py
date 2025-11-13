@@ -1,8 +1,4 @@
-"""Minimal configuration for the Flask app.
 
-Intentionally lightweight: no external services required. Replace these
-values as the project evolves.
-"""
 
 import os
 

@@ -1,14 +1,4 @@
-"""Attempt-related endpoints (stubs).
 
-Purpose:
-- Start and complete a problem-solving attempt with a simple timer.
-- Fetch recent attempt history for the current user.
-
-Future behavior:
-- Persist attempts and compute durations on the server.
-- Enforce authentication and associate attempts with the real user id.
-"""
-from __future__ import annotations
 
 from datetime import datetime
 

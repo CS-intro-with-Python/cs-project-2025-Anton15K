@@ -1,16 +1,4 @@
-"""Problem-related endpoints (stubs).
 
-Purpose:
-- List Codeforces problems known to the system.
-- Create placeholder problems for local testing.
-- Retrieve a single problem by id.
-- Provide an estimated rating for a problem (mocked for now).
-
-Future behavior:
-- Persist problems and compute ratings from solver statistics.
-- Sync metadata from Codeforces API.
-"""
-from __future__ import annotations
 
 from flask import Blueprint, jsonify, request
 

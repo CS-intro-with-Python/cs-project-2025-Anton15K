@@ -1,13 +1,4 @@
-"""User-related endpoints (stubs).
 
-Purpose:
-- Retrieve information about the currently authenticated user.
-
-Future behavior:
-- Integrate with Flask-Login to read the session user (or JWT claims).
-- Expand to include profile updates and user search/admin endpoints.
-"""
-from __future__ import annotations
 
 from flask import Blueprint, jsonify
 
