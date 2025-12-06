@@ -6,18 +6,22 @@ on:
       - 'Backend/**'
       - 'scripts/test_user_requests.py'
       - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'db/**'
       - '.github/workflows/**'
   pull_request:
     paths:
       - 'Backend/**'
       - 'scripts/test_user_requests.py'
       - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'db/**'
       - '.github/workflows/**'
   workflow_dispatch:
 
 jobs:
   test:
-    name: Build, run, and test API
+    name: Build, run, and test API with database
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -37,33 +41,43 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Build backend Docker image
+      - name: Start services with Docker Compose
         run: |
-          docker build -t cs-backend:ci .
+          docker compose up -d --build
+          sleep 10
 
-      - name: Run backend container
+      - name: Wait for backend health
         run: |
-          docker run -d --name cs-backend -p 5001:5001 cs-backend:ci
+          for i in {1..30}; do
+            if curl -s http://127.0.0.1:5001/api/v1/health | grep -q "ok"; then
+              echo "Backend is healthy"
+              exit 0
+            fi
+            echo "Waiting for backend... ($i/30)"
+            sleep 2
+          done
+          echo "Backend failed to start"
+          docker compose logs backend
+          exit 1
 
-      - name: test test with scripts/test_user_requests.py
+      - name: Run API tests
         env:
           BASE_URL: http://127.0.0.1:5001
         run: |
-          # The script waits for /api/v1/health by default
-          python scripts/test_user_requests.py --base-url "$BASE_URL"
+          python scripts/test_user_requests.py
 
       - name: Show container logs on failure
         if: failure()
         run: |
-          echo '--- Container logs (cs-backend) ---'
-          docker logs cs-backend || true
+          echo '--- Docker Compose logs ---'
+          docker compose logs
 
-      - name: Stop and remove container
+      - name: Stop and cleanup
         if: always()
         run: |
-          docker rm -f cs-backend || true
+          docker compose down -v
 
-# Optional: basic concurrency to avoid overlapping runs on same ref
 concurrency:
   group: backend-test-${{ github.ref }}
   cancel-in-progress: true
+

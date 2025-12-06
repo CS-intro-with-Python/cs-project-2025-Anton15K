@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - CF Rating Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Profile Header -->
+    <div class="glass-card rounded-2xl p-8 mb-8">
+        <div class="flex items-center space-x-6">
+            <div
+                class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-4xl font-bold text-white">
+                {{ user.username[0] | upper }}
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-white">{{ user.username }}</h1>
+                <p class="text-gray-400">{{ user.email }}</p>
+                {% if user.cf_handle %}
+                <a href="https://codeforces.com/profile/{{ user.cf_handle }}" target="_blank"
+                    class="text-indigo-400 hover:text-indigo-300 flex items-center space-x-1 mt-2">
+                    <span>CF: {{ user.cf_handle }}</span>
+                    <span>↗</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="glass-card rounded-2xl p-6 text-center">
+            <div
+                class="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                {{ user.rating or 1200 }}
+            </div>
+            <div class="text-gray-400 mt-2">Current Rating</div>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center">
+            <div
+                class="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                {{ stats.solved or 0 }}
+            </div>
+            <div class="text-gray-400 mt-2">Problems Solved</div>
+        </div>
+        <div class="glass-card rounded-2xl p-6 text-center">
+            <div class="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                {{ stats.attempts or 0 }}
+            </div>
+            <div class="text-gray-400 mt-2">Total Attempts</div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="glass-card rounded-2xl p-8">
+        <h2 class="text-xl font-bold text-white mb-6">Recent Activity</h2>
+        {% if recent_attempts %}
+        <div class="space-y-4">
+            {% for attempt in recent_attempts %}
+            <div class="bg-slate-700/30 rounded-lg p-4 flex justify-between items-center">
+                <div>
+                    <div class="text-white font-medium">
+                        {% if attempt.problem %}{{ attempt.problem.title }}{% else %}Problem #{{ attempt.problem_id }}{%
+                        endif %}
+                    </div>
+                    <div class="text-gray-400 text-sm">
+                        {{ attempt.started_at.strftime('%Y-%m-%d %H:%M') if attempt.started_at else '-' }}
+                    </div>
+                </div>
+                <div>
+                    {% if attempt.result == 'solved' %}
+                    <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">Solved</span>
+                    {% elif attempt.result == 'failed' %}
+                    <span class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm">Failed</span>
+                    {% else %}
+                    <span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm">In Progress</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400 text-center py-4">No recent activity. Start solving problems!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

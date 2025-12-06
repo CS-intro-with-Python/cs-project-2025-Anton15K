@@ -54,21 +54,34 @@ def main() -> int:
 
     time.sleep(2)
 
+    # Generate unique username/email to avoid conflicts on re-runs
+    import random
+    suffix = random.randint(1000, 9999)
+    test_user = f"testuser{suffix}"
+    test_email = f"test{suffix}@example.com"
+
     checks: List[Check] = [
         Check("Index", "GET", "/", 200),
         Check("Health", "GET", f"{API_PREFIX}/health", 200),
         Check("Users: me", "GET", f"{API_PREFIX}/users/me", 200),
         Check("Problems: list", "GET", f"{API_PREFIX}/problems", 200),
+        # Create a problem first (needed for attempts due to foreign key)
         Check("Problems: create", "POST", f"{API_PREFIX}/problems", 201, {"cf_id": "9999Z", "title": "Demo Problem"}),
         Check("Problems: get one", "GET", f"{API_PREFIX}/problems/1", 200),
         Check("Problems: estimate", "GET", f"{API_PREFIX}/problems/1/estimate", 200),
-        Check("Auth: register", "POST", f"{API_PREFIX}/auth/register", 201, {"username": "alice", "email": "alice@example.com", "password": "secret"}),
-        Check("Auth: login", "POST", f"{API_PREFIX}/auth/login", 200, {"username": "alice", "password": "secret"}),
+        # Auth with unique user
+        Check("Auth: register", "POST", f"{API_PREFIX}/auth/register", 201, {"username": test_user, "email": test_email, "password": "secret"}),
+        Check("Auth: login", "POST", f"{API_PREFIX}/auth/login", 200, {"username": test_user, "password": "secret"}),
         Check("Auth: logout", "POST", f"{API_PREFIX}/auth/logout", 200),
-        Check("Attempts: start", "POST", f"{API_PREFIX}/attempts/start", 201, {"problem_id": 42}),
-        Check("Attempts: complete", "POST", f"{API_PREFIX}/attempts/complete", 200, {"attempt_id": 100, "result": "solved"}),
+        # Attempts with problem_id=1 (created above) and user_id=1
+        Check("Attempts: start", "POST", f"{API_PREFIX}/attempts/start", 201, {"problem_id": 1, "user_id": 1}),
+        Check("Attempts: complete", "POST", f"{API_PREFIX}/attempts/complete", 200, {"attempt_id": 1, "result": "solved"}),
         Check("Attempts: history", "GET", f"{API_PREFIX}/attempts/history", 200),
-        Check("Ratings: adjust", "POST", f"{API_PREFIX}/ratings/adjust", 200, {"problem_id": 42, "delta": 10}),
+        Check("Ratings: adjust", "POST", f"{API_PREFIX}/ratings/adjust", 200, {"problem_id": 1, "delta": 10}),
+        Check("Ratings: calc perf", "POST", f"{API_PREFIX}/ratings/calculate-performance", 200, {"user_time": 300, "solvers_data": []}),
+        Check("Ratings: calc delta", "POST", f"{API_PREFIX}/ratings/calculate-delta", 200, {"user_rating": 1500, "problem_rating": 1400}),
+        Check("CF: user", "GET", f"{API_PREFIX}/codeforces/user/tourist", 200),
+        Check("CF: check-sub", "POST", f"{API_PREFIX}/codeforces/check-submission", 200, {"handle": "tourist", "contest_id": 1, "index": "A"}),
     ]
 
     total = len(checks)

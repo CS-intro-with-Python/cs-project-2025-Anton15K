@@ -30,12 +30,16 @@ Backend/                 # Flask application source code
 		problems.py          # Problem-related endpoints
 		attempts.py          # Attempt-related endpoints
 		ratings.py           # Rating adjustment endpoints
+		codeforces.py        # Codeforces API integration endpoints
 		health.py            # Health check endpoint
 	entities/              # Domain entities
 		user.py
 		problem.py
 		attempt.py
 		rating_adjustment.py
+	tools/                 # Codeforces integration utilities
+		cf_api.py            # Codeforces API client functions
+		advanced_rating_logic.py  # Performance rating calculations
 	models/                # Additional models module (if needed)
 
 Dockerfile               # Container image definition for the backend
@@ -73,21 +77,29 @@ flask run --port 5001
 
 Once running, the API should be available at `http://localhost:5001`.
 
-## Running with Docker
+## Running with Docker Compose
 
-The repository includes a `Dockerfile` for building a backend image.
+The repository includes `docker-compose.yml` for running the backend with PostgreSQL.
 
 ```bash
 cd cs-project-2025-Anton15K
 
-# Build the image
-docker build -t cs-2025-backend .
+# Start all services (Postgres + Backend)
+docker compose up -d --build
 
-# Run the container
-docker run --rm -p 5001:5001 cs-2025-backend
+# View logs
+docker compose logs -f
+
+# Stop services
+docker compose down
+
+# Stop and remove all data
+docker compose down -v
 ```
 
-After the container starts, the API should be accessible at `http://localhost:5001`.
+After the containers start, the API should be accessible at `http://localhost:5001`.
+
+The database is automatically initialized with the schema from `db/init.sql`.
 
 ## API Overview
 
@@ -98,6 +110,7 @@ The backend is organized into blueprints under `Backend/api/`:
 - `problems` &mdash; listing and retrieving Codeforces problems with estimated ratings
 - `attempts` &mdash; recording user attempts and solve times
 - `ratings` &mdash; adjusting and recalculating problem difficulty ratings
+- `codeforces` &mdash; Codeforces API integration for user/problem data and solver analysis
 - `health` &mdash; simple health check endpoint (e.g. for uptime monitoring)
 
 Refer to the docstrings and route definitions in these modules for the most up-to-date request/response formats.

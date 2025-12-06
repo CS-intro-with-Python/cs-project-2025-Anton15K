@@ -15,7 +15,18 @@ class Config:
     # CORS (permissive for now; lock down later)
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
 
+    # Database
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "DATABASE_URL",
+        "postgresql://cs2025:cs2025pass@localhost:5432/cs2025"
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
 class TestConfig(Config):
     TESTING = True
     DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "DATABASE_URL",
+        "postgresql://cs2025:cs2025pass@localhost:5432/cs2025"
+    )

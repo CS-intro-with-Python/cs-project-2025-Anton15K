@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CF Rating Tracker{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        accent: '#06b6d4',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body class="h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <!-- Navigation -->
+    <nav class="bg-slate-800/50 backdrop-blur-lg border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('views.home') }}" class="flex items-center space-x-2">
+                        <span class="text-2xl">🏆</span>
+                        <span class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                            CF Rating Tracker
+                        </span>
+                    </a>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-center space-x-4">
+                            <a href="{{ url_for('views.problems') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-700/50 transition-all">
+                                Problems
+                            </a>
+                            <a href="{{ url_for('views.attempts') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-700/50 transition-all">
+                                Attempts
+                            </a>
+                            <a href="{{ url_for('views.codeforces') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-700/50 transition-all">
+                                CF Lookup
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if current_user %}
+                        <a href="{{ url_for('views.profile') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-700/50 transition-all">
+                            {{ current_user.username }}
+                        </a>
+                        <a href="{{ url_for('views.logout') }}" class="bg-red-500/20 text-red-400 hover:bg-red-500/30 px-4 py-2 rounded-lg transition-all">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('views.login') }}" class="text-gray-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-700/50 transition-all">
+                            Login
+                        </a>
+                        <a href="{{ url_for('views.register') }}" class="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-4 py-2 rounded-lg transition-all shadow-lg shadow-indigo-500/25">
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                {% for category, message in messages %}
+                    <div class="{% if category == 'error' %}bg-red-500/20 border-red-500 text-red-400{% elif category == 'success' %}bg-green-500/20 border-green-500 text-green-400{% else %}bg-blue-500/20 border-blue-500 text-blue-400{% endif %} border rounded-lg p-4 mb-4">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800/30 border-t border-slate-700 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-500">
+            <p>CF Rating Tracker &copy; 2025 | CS Project</p>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
