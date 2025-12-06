@@ -6,7 +6,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from .extensions import db
 from .models import User, Problem, Attempt
-from .tools import get_user_info, get_solvers_for_problem, estimate_problem_difficulty
+from .tools import (
+    get_user_info, get_solvers_for_problem, estimate_problem_difficulty,
+    calculate_performance_rating, calculate_time_percentile,
+    calculate_expected_performance_score, calculate_actual_performance_score,
+    calculate_rating_delta, check_submission, update_problem_rating_bayesian
+)
 
 bp = Blueprint("views", __name__, template_folder="templates", static_folder="static")
 
@@ -107,11 +112,25 @@ def add_problem():
     contest_id = request.form.get("contest_id")
     problem_index = request.form.get("problem_index")
     
+    estimated_rating = 1200
+    
+    # Auto-estimate rating from CF solver data if contest info provided
+    if contest_id and problem_index:
+        try:
+            solver_data = get_solvers_for_problem(int(contest_id), problem_index)
+            if solver_data.get("solvers"):
+                estimated_rating = estimate_problem_difficulty(solver_data["solvers"])
+                flash(f"Estimated rating: {estimated_rating} (from {len(solver_data['solvers'])} solvers)", "success")
+        except Exception as e:
+            flash(f"Could not estimate rating: {e}", "error")
+    
     problem = Problem(
         cf_id=cf_id,
         title=title,
         contest_id=int(contest_id) if contest_id else None,
         problem_index=problem_index or None,
+        estimated_rating=estimated_rating,
+        initial_estimated_rating=estimated_rating,
     )
     db.session.add(problem)
     db.session.commit()
@@ -157,6 +176,13 @@ def start_attempt(problem_id):
         flash("You have an active attempt. Complete it first.", "error")
         return redirect(url_for("views.attempts"))
     
+    # Check if already solved on Codeforces
+    if user.cf_handle and problem.contest_id and problem.problem_index:
+        already_solved, _ = check_submission(user.cf_handle, problem.contest_id, problem.problem_index)
+        if already_solved:
+            flash("⚠ You have already solved this problem on Codeforces!", "error")
+            return redirect(url_for("views.attempts"))
+    
     attempt = Attempt(
         user_id=user.id,
         problem_id=problem_id,
@@ -171,12 +197,60 @@ def start_attempt(problem_id):
 @bp.route("/attempts/<int:attempt_id>/complete", methods=["POST"])
 def complete_attempt(attempt_id):
     attempt = Attempt.query.get_or_404(attempt_id)
+    user = User.query.get(attempt.user_id)
+    problem = Problem.query.get(attempt.problem_id)
     result = request.form.get("result", "solved")
     
     attempt.ended_at = datetime.utcnow()
     attempt.result = result
     if attempt.started_at:
         attempt.duration_sec = int((attempt.ended_at - attempt.started_at).total_seconds())
+    
+    # CF submission verification for solved attempts (must have submitted after attempt start)
+    verified = False
+    if result == "solved" and user and user.cf_handle and problem and problem.contest_id and problem.problem_index:
+        start_ts = int(attempt.started_at.timestamp()) if attempt.started_at else None
+        verified, sub_data = check_submission(user.cf_handle, problem.contest_id, problem.problem_index, after_time=start_ts)
+        if verified:
+            flash("✓ Verified on Codeforces!", "success")
+        else:
+            flash("⚠ Could not verify on CF - ensure you submitted after starting the timer", "error")
+    
+    # Calculate performance rating and delta for solved attempts
+    if result == "solved" and problem and problem.contest_id and problem.problem_index and attempt.duration_sec:
+        try:
+            solver_data = get_solvers_for_problem(problem.contest_id, problem.problem_index)
+            solvers = solver_data.get("solvers", [])
+            
+            if solvers:
+                user_time = attempt.duration_sec
+                
+                # Calculate performance metrics
+                perf_rating = calculate_performance_rating(user_time, solvers)
+                time_pct = calculate_time_percentile(user_time, solvers)
+                
+                attempt.performance_rating = perf_rating
+                attempt.time_percentile = time_pct
+                
+                # Calculate and apply rating delta
+                if user:
+                    actual_score = calculate_actual_performance_score(time_pct)
+                    expected_score = calculate_expected_performance_score(user.rating, problem.estimated_rating)
+                    delta = calculate_rating_delta(user.rating, perf_rating, expected_score, actual_score)
+                    
+                    user.rating = max(100, user.rating + delta)
+                    
+                    if delta >= 0:
+                        flash(f"Rating +{delta} (perf: {perf_rating}, top {time_pct:.1f}%)", "success")
+                    else:
+                        flash(f"Rating {delta} (perf: {perf_rating}, top {time_pct:.1f}%)", "error")
+                
+                # Update problem rating estimate based on all attempts
+                all_attempts = Attempt.query.filter_by(problem_id=problem.id, result="solved").all()
+                new_rating, confidence = update_problem_rating_bayesian(problem, all_attempts)
+                problem.estimated_rating = new_rating
+        except Exception as e:
+            flash(f"Could not calculate performance: {e}", "error")
     
     db.session.commit()
     flash(f"Attempt marked as {result}!", "success")

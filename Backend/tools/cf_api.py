@@ -31,16 +31,23 @@ def get_problem_info(contest_id, index):
         print(f"Error fetching problem info: {e}")
     return None
 
-def check_submission(handle, contest_id, index):
+def check_submission(handle, contest_id, index, after_time=None):
+    """
+    Check if user has solved a problem on Codeforces.
+    after_time: optional Unix timestamp - only count submissions after this time.
+    """
     try:
-        response = requests.get(f"{BASE_URL}/user.status?handle={handle}&from=1&count=10")
+        response = requests.get(f"{BASE_URL}/user.status?handle={handle}&from=1&count=50")
         data = response.json()
         if data['status'] == 'OK':
             submissions = data['result']
             for sub in submissions:
                 if sub.get('contestId') == int(contest_id) and sub['problem']['index'] == index:
                     if sub['verdict'] == 'OK':
-                        return True, sub
+                        if after_time is None:
+                            return True, sub
+                        if sub.get('creationTimeSeconds', 0) >= after_time:
+                            return True, sub
     except Exception as e:
         print(f"Error checking submission: {e}")
     return False, None

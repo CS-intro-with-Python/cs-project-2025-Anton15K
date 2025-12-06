@@ -121,6 +121,12 @@ Refer to the docstrings and route definitions in these modules for the most up-t
 - Domain logic that is not tied to Flask should live in `Backend/entities/`.
 - If you introduce a database or ORM, extend `Backend/models.py` or `Backend/models/` accordingly and update configuration in `Backend/config.py`.
 
+### Rating and Verification System
+
+- **Pre-solve check**: When starting an attempt, the system checks if the user has already solved the problem on Codeforces and blocks the attempt if so.
+- **Post-solve verification**: When completing an attempt, submissions are verified against Codeforces API, checking only submissions made *after* the attempt started.
+- **Bayesian problem rating**: After each solve, the problem's estimated rating is updated using a Bayesian approach that combines CF solver data with local performance data.
+
 ## Scripts
 
 The `scripts/test_user_requests.py` script can be used as a simple manual test harness for exercising user-related endpoints (e.g. registration and login). Adjust URLs and payloads inside the script if you change API paths or ports.
