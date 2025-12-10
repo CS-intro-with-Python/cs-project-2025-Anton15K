@@ -11,12 +11,80 @@ bp = Blueprint("problems", __name__)
 
 @bp.get("")
 def list_problems():
+    """
+    List all problems
+    ---
+    tags:
+      - Problems
+    responses:
+      200:
+        description: List of all problems
+        schema:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  cf_id:
+                    type: string
+                  title:
+                    type: string
+                  estimated_rating:
+                    type: integer
+            total:
+              type: integer
+    """
     problems = Problem.query.all()
     return jsonify({"items": [p.to_dict() for p in problems], "total": len(problems)})
 
 
 @bp.post("")
 def create_problem():
+    """
+    Create a new problem
+    ---
+    tags:
+      - Problems
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            cf_id:
+              type: string
+              example: "1234A"
+              description: Codeforces problem ID
+            title:
+              type: string
+              example: "Watermelon"
+            contest_id:
+              type: integer
+              example: 1234
+            problem_index:
+              type: string
+              example: "A"
+            estimated_rating:
+              type: integer
+              example: 800
+    responses:
+      201:
+        description: Problem created
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            cf_id:
+              type: string
+            title:
+              type: string
+    """
     payload = request.get_json(silent=True) or {}
     problem = Problem(
         cf_id=payload.get("cf_id", "9999Z"),
@@ -32,6 +100,23 @@ def create_problem():
 
 @bp.get("/<int:problem_id>")
 def get_problem(problem_id: int):
+    """
+    Get a problem by ID
+    ---
+    tags:
+      - Problems
+    parameters:
+      - in: path
+        name: problem_id
+        type: integer
+        required: true
+        description: Problem ID
+    responses:
+      200:
+        description: Problem details
+      404:
+        description: Problem not found
+    """
     problem = Problem.query.get(problem_id)
     if not problem:
         return jsonify({"error": "Problem not found"}), 404
@@ -40,6 +125,33 @@ def get_problem(problem_id: int):
 
 @bp.get("/<int:problem_id>/estimate")
 def estimate_problem(problem_id: int):
+    """
+    Get estimated rating for a problem
+    ---
+    tags:
+      - Problems
+    parameters:
+      - in: path
+        name: problem_id
+        type: integer
+        required: true
+    responses:
+      200:
+        description: Problem estimation
+        schema:
+          type: object
+          properties:
+            problem_id:
+              type: integer
+            cf_id:
+              type: string
+            estimated_rating:
+              type: integer
+            method:
+              type: string
+      404:
+        description: Problem not found
+    """
     problem = Problem.query.get(problem_id)
     if not problem:
         return jsonify({"error": "Problem not found"}), 404
@@ -55,7 +167,48 @@ def estimate_problem(problem_id: int):
 
 @bp.post("/<int:problem_id>/estimate-from-cf")
 def estimate_from_codeforces(problem_id: int):
-    """Estimate problem difficulty using live Codeforces solver data."""
+    """
+    Estimate problem difficulty from Codeforces solver data
+    ---
+    tags:
+      - Problems
+    parameters:
+      - in: path
+        name: problem_id
+        type: integer
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - contest_id
+            - problem_index
+          properties:
+            contest_id:
+              type: integer
+              example: 1234
+            problem_index:
+              type: string
+              example: "A"
+    responses:
+      200:
+        description: Estimated difficulty
+        schema:
+          type: object
+          properties:
+            problem_id:
+              type: integer
+            estimated_rating:
+              type: integer
+            solver_count:
+              type: integer
+            method:
+              type: string
+      400:
+        description: Missing required fields
+    """
     payload = request.get_json(silent=True) or {}
     contest_id = payload.get("contest_id")
     problem_index = payload.get("problem_index")
@@ -90,5 +243,6 @@ def estimate_from_codeforces(problem_id: int):
         "solver_count": len(solver_data["solvers"]),
         "method": "solver-rating-distribution",
     })
+
 
 

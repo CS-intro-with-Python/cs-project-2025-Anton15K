@@ -3,86 +3,84 @@
 
 ## Description
 
-This project is a backend web service that estimates the difficulty rating of Codeforces problems based on the ratings of users who solved them.
+A full-stack web application for tracking Codeforces problem-solving performance with intelligent rating estimation. The system analyzes solver data from Codeforces contests to estimate problem difficulty and calculate user performance ratings.
 
-Each Codeforces problem is solved by users with varying ratings. By analyzing these solver ratings, the system can estimate a possible difficulty rating for each problem and later adjust it based on user feedback and performance.
+### Key Features
 
-The backend is implemented with Flask and exposes a RESTful API for:
+- **User Authentication**: Registration, login, and session management
+- **Problem Management**: Add Codeforces problems with automatic rating estimation
+- **Timer-based Attempts**: Track solve times with start/stop timer functionality
+- **Codeforces Integration**: Verify solutions and fetch solver data from CF API
+- **Performance Analytics**: Calculate performance ratings and rating deltas based on solve times
+- **Bayesian Rating Updates**: Problem ratings improve over time based on local solve data
 
-- Managing users and authentication
-- Managing problems and attempts
-- Estimating and updating problem difficulty ratings
-- Reporting health status for monitoring
+## Tech Stack
 
-The current repository contains only the backend service; a frontend can be built separately to consume this API.
+- **Backend**: Flask, Jinja2
+- **Database**: PostgreSQL
+- **Containerization**: Docker, Docker Compose
+- **CI/CD**: GitHub Actions
+- **Styling**: Tailwind CSS
+- **External API**: Codeforces API
 
 ## Project Structure
 
 ```text
-Backend/                 # Flask application source code
-	app.py                 # Application factory / entry point
-	config.py              # Configuration settings
-	extensions.py          # Flask extensions initialization
-	models.py              # Database models (if using ORM)
-	api/                   # REST API blueprints
-		auth.py              # Authentication endpoints
-		users.py             # User management endpoints
-		problems.py          # Problem-related endpoints
-		attempts.py          # Attempt-related endpoints
-		ratings.py           # Rating adjustment endpoints
-		codeforces.py        # Codeforces API integration endpoints
-		health.py            # Health check endpoint
-	entities/              # Domain entities
-		user.py
-		problem.py
-		attempt.py
-		rating_adjustment.py
-	tools/                 # Codeforces integration utilities
-		cf_api.py            # Codeforces API client functions
-		advanced_rating_logic.py  # Performance rating calculations
-	models/                # Additional models module (if needed)
+Backend/
+    app.py                    # Application factory / entry point
+    config.py                 # Configuration settings
+    extensions.py             # Flask extensions (SQLAlchemy, etc.)
+    views.py                  # Frontend page routes and logic
+    models.py                 # Database model exports
+    api/                      # REST API blueprints
+        auth.py               # Authentication endpoints
+        users.py              # User management endpoints
+        problems.py           # Problem CRUD + estimation
+        attempts.py           # Attempt start/complete endpoints
+        ratings.py            # Rating calculation endpoints
+        codeforces.py         # CF API integration endpoints
+        health.py             # Health check endpoint
+    entities/                 # SQLAlchemy ORM models
+        user.py               # User model (rating, cf_handle)
+        problem.py            # Problem model (estimated_rating)
+        attempt.py            # Attempt model (duration, performance)
+        rating_adjustment.py  # Rating adjustment records
+    tools/                    # Business logic utilities
+        cf_api.py             # Codeforces API client
+        advanced_rating_logic.py  # Rating algorithms
+    templates/                # Jinja2 HTML templates
+        base.html             # Base layout with navbar
+        index.html            # Home page
+        auth/                 # Login/register pages
+        problems/             # Problem list/detail pages
+        attempts/             # Attempt history page
+        profile/              # User profile page
+        codeforces/           # CF lookup tools
+    static/                   # CSS/JS assets
 
-Dockerfile               # Container image definition for the backend
+db/
+    init.sql                  # Database schema initialization
+
 scripts/
-	test_user_requests.py  # Simple script to exercise user-related endpoints
+    test_user_requests.py     # API smoke tests
+
+.github/workflows/
+    backend-smoke.yml         # CI pipeline for testing
 ```
 
 ## Local Setup
 
 ### Prerequisites
 
-- Python 3.10+ (recommended)
-- `pip` and `venv`
-- (Optional) Docker, if you prefer running the service in a container
+- Python 3.10+
+- Docker and Docker Compose (recommended)
+- Or: `pip`, `venv`, and PostgreSQL
 
-### Backend Setup (without Docker)
+### Running with Docker Compose (Recommended)
 
 ```bash
-# Clone repository
+# Clone and enter directory
 git clone <your-repo-url> && cd cs-project-2025-Anton15K
-
-# Create and activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt  # or requirements-dev.txt if present
-
-# Run the Flask app (adjust as needed based on app factory)
-cd Backend
-export FLASK_APP=app.py
-export FLASK_ENV=development
-flask run --port 5001
-```
-
-Once running, the API should be available at `http://localhost:5001`.
-
-## Running with Docker Compose
-
-The repository includes `docker-compose.yml` for running the backend with PostgreSQL.
-
-```bash
-cd cs-project-2025-Anton15K
 
 # Start all services (Postgres + Backend)
 docker compose up -d --build
@@ -97,43 +95,132 @@ docker compose down
 docker compose down -v
 ```
 
-After the containers start, the API should be accessible at `http://localhost:5001`.
+The app will be available at `http://localhost:5001`.
 
-The database is automatically initialized with the schema from `db/init.sql`.
+### Running without Docker
+
+```bash
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up PostgreSQL and configure DATABASE_URL
+export DATABASE_URL=postgresql://user:pass@localhost/dbname
+
+# Run the Flask app
+cd Backend
+export FLASK_APP=app.py
+export FLASK_ENV=development
+flask run --port 5001
+```
 
 ## API Overview
 
-The backend is organized into blueprints under `Backend/api/`:
+All API endpoints are prefixed with `/api/v1/`.
 
-- `auth` &mdash; login, registration, and authentication-related operations
-- `users` &mdash; CRUD operations for users
-- `problems` &mdash; listing and retrieving Codeforces problems with estimated ratings
-- `attempts` &mdash; recording user attempts and solve times
-- `ratings` &mdash; adjusting and recalculating problem difficulty ratings
-- `codeforces` &mdash; Codeforces API integration for user/problem data and solver analysis
-- `health` &mdash; simple health check endpoint (e.g. for uptime monitoring)
+| Blueprint    | Description                                          |
+|--------------|------------------------------------------------------|
+| `auth`       | Login, registration, logout                          |
+| `users`      | User CRUD, current user info                         |
+| `problems`   | Problem list, create, get, estimate from CF          |
+| `attempts`   | Start/complete attempts, history                     |
+| `ratings`    | Calculate performance, delta, adjust ratings         |
+| `codeforces` | User lookup, problem analysis, submission check      |
+| `health`     | Health check (`/api/v1/health`)                      |
 
-Refer to the docstrings and route definitions in these modules for the most up-to-date request/response formats.
+### Frontend Pages
 
-## Development Notes
+| Route           | Description                         |
+|-----------------|-------------------------------------|
+| `/`             | Home page with stats                |
+| `/login`        | Login form                          |
+| `/register`     | Registration form                   |
+| `/problems`     | Problem list + add form             |
+| `/problems/<id>`| Problem detail                      |
+| `/attempts`     | Active attempt timer + history      |
+| `/profile`      | User profile with rating            |
+| `/codeforces`   | CF user/problem lookup tools        |
 
-- Keep new endpoints grouped logically under the existing blueprints in `Backend/api/`.
-- Domain logic that is not tied to Flask should live in `Backend/entities/`.
-- If you introduce a database or ORM, extend `Backend/models.py` or `Backend/models/` accordingly and update configuration in `Backend/config.py`.
+## Rating System
 
-### Rating and Verification System
+### Problem Difficulty Estimation
 
-- **Pre-solve check**: When starting an attempt, the system checks if the user has already solved the problem on Codeforces and blocks the attempt if so.
-- **Post-solve verification**: When completing an attempt, submissions are verified against Codeforces API, checking only submissions made *after* the attempt started.
-- **Bayesian problem rating**: After each solve, the problem's estimated rating is updated using a Bayesian approach that combines CF solver data with local performance data.
+When a problem is added with `contest_id` and `problem_index`, the system:
+1. Fetches all solvers from Codeforces contest standings
+2. Gets each solver's rating at the time of the contest
+3. Calculates estimated difficulty as the **mean solver rating**
 
-## Scripts
+### Performance Rating Calculation
 
-The `scripts/test_user_requests.py` script can be used as a simple manual test harness for exercising user-related endpoints (e.g. registration and login). Adjust URLs and payloads inside the script if you change API paths or ports.
+When a user completes a problem, their performance rating is calculated using **regression analysis**:
+- Model: `log(net_time) = a + b * rating`
+- The user's time is mapped to an implied rating based on how fast they solved relative to other solvers
 
-## Future Work
+### Rating Delta (Elo-style)
 
-- Add automated tests for API endpoints (e.g. with Pytest and Flask's test client).
-- Document each endpoint (OpenAPI/Swagger or similar) and provide example requests.
-- Add CI workflows for linting, testing, and building the Docker image.
+```
+delta = k_factor * (actual_score - expected_score) * scale_factor
+```
+
+- **Expected score**: Based on user rating vs problem rating (Elo formula)
+- **Actual score**: Based on time percentile (faster = higher)
+- **Scale factor**: Amplified if performance rating differs significantly from user rating
+
+### Bayesian Problem Rating Updates
+
+After each solve, the problem's estimated rating is updated:
+- Uses a **Bayesian posterior** combining CF data (prior) with local performance data
+- Higher-rated solvers contribute more weight
+- Confidence increases with more attempts
+
+## Submission Verification
+
+The timer system includes Codeforces submission verification:
+
+1. **On Start**: Checks if user already solved the problem on CF → blocks if yes
+2. **On Complete**: Verifies that user submitted a correct solution *after* the timer started
+3. **Checks last 50 submissions** to avoid missing older submissions
+
+## Testing
+
+### Run API Smoke Tests
+
+```bash
+# With Docker running
+python3 scripts/test_user_requests.py
+```
+
+### GitHub Actions CI
+
+The `backend-smoke.yml` workflow runs on every push:
+1. Builds Docker containers
+2. Waits for health check
+3. Runs all API smoke tests
+
+## Success Criteria
+
+### Authentication & User Management
+- [ ] Users can register with username, email, password, and optional CF handle
+- [ ] Users can log in and maintain session across pages
+
+### Problem Management
+- [ ] Problems can be added with Codeforces contest ID and problem index
+- [ ] System automatically estimates problem difficulty from CF solver data
+- [ ] Problem list shows all problems with their estimated ratings
+
+### Timer & Attempt Tracking
+- [ ] Users can start a timed attempt for any problem
+- [ ] Attempt history shows duration and performance metrics
+
+### Codeforces Verification
+- [ ] System verifies submissions via CF API on attempt completion
+- [ ] User receives feedback on verification status
+
+### Rating System
+- [ ] Performance rating calculated based on solve time vs other solvers
+- [ ] Rating delta applied to user rating after each solved attempt
+
 

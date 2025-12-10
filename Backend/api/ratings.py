@@ -16,6 +16,45 @@ bp = Blueprint("ratings", __name__)
 
 @bp.post("/adjust")
 def adjust_rating():
+    """
+    Adjust a user's rating
+    ---
+    tags:
+      - Ratings
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            problem_id:
+              type: integer
+              example: 1
+            delta:
+              type: integer
+              example: 25
+              description: Rating change amount
+            note:
+              type: string
+              example: "Solved problem faster than expected"
+    responses:
+      200:
+        description: Rating adjusted
+        schema:
+          type: object
+          properties:
+            problem_id:
+              type: integer
+            previous_estimate:
+              type: integer
+            new_estimate:
+              type: integer
+            applied_delta:
+              type: integer
+            message:
+              type: string
+    """
     payload = request.get_json(silent=True) or {}
     prev = 1300
     delta = int(payload.get("delta", 0))
@@ -43,7 +82,45 @@ def adjust_rating():
 
 @bp.post("/calculate-performance")
 def calculate_performance():
-    """Calculate performance rating based on solve time and solver data."""
+    """
+    Calculate performance rating based on solve time
+    ---
+    tags:
+      - Ratings
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - user_time
+          properties:
+            user_time:
+              type: integer
+              example: 1200
+              description: Solve time in seconds
+            solvers_data:
+              type: array
+              items:
+                type: object
+              description: Array of solver data with their times and ratings
+    responses:
+      200:
+        description: Performance calculated
+        schema:
+          type: object
+          properties:
+            user_time:
+              type: integer
+            performance_rating:
+              type: integer
+            time_percentile:
+              type: number
+              format: float
+      400:
+        description: Invalid user_time
+    """
     payload = request.get_json(silent=True) or {}
     user_time = payload.get("user_time", 0)
     solvers_data = payload.get("solvers_data", [])
@@ -63,7 +140,54 @@ def calculate_performance():
 
 @bp.post("/calculate-delta")
 def calculate_delta():
-    """Calculate rating delta based on expected vs actual performance."""
+    """
+    Calculate rating delta based on expected vs actual performance
+    ---
+    tags:
+      - Ratings
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - user_rating
+          properties:
+            user_rating:
+              type: integer
+              example: 1500
+              description: Current user rating
+            problem_rating:
+              type: integer
+              example: 1600
+              description: Problem difficulty rating
+            time_percentile:
+              type: number
+              format: float
+              example: 75.0
+            performance_rating:
+              type: integer
+              example: 1650
+    responses:
+      200:
+        description: Delta calculated
+        schema:
+          type: object
+          properties:
+            user_rating:
+              type: integer
+            problem_rating:
+              type: integer
+            expected_score:
+              type: number
+            actual_score:
+              type: number
+            rating_delta:
+              type: integer
+      400:
+        description: Missing user_rating
+    """
     payload = request.get_json(silent=True) or {}
     user_rating = payload.get("user_rating")
     problem_rating = payload.get("problem_rating")
@@ -84,4 +208,5 @@ def calculate_delta():
         "actual_score": actual,
         "rating_delta": delta,
     })
+
 

@@ -11,6 +11,49 @@ bp = Blueprint("attempts", __name__)
 
 @bp.post("/start")
 def start_attempt():
+    """
+    Start a new problem attempt
+    ---
+    tags:
+      - Attempts
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - problem_id
+          properties:
+            user_id:
+              type: integer
+              example: 1
+            problem_id:
+              type: integer
+              example: 1
+    responses:
+      201:
+        description: Attempt started
+        schema:
+          type: object
+          properties:
+            attempt:
+              type: object
+              properties:
+                id:
+                  type: integer
+                user_id:
+                  type: integer
+                problem_id:
+                  type: integer
+                started_at:
+                  type: string
+                  format: date-time
+            message:
+              type: string
+      400:
+        description: Missing problem_id
+    """
     payload = request.get_json(silent=True) or {}
     user_id = payload.get("user_id", 1)
     problem_id = payload.get("problem_id")
@@ -31,6 +74,49 @@ def start_attempt():
 
 @bp.post("/complete")
 def complete_attempt():
+    """
+    Complete a problem attempt
+    ---
+    tags:
+      - Attempts
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - attempt_id
+          properties:
+            attempt_id:
+              type: integer
+              example: 1
+            result:
+              type: string
+              example: solved
+              enum: [solved, failed, skipped]
+            performance_rating:
+              type: integer
+              example: 1500
+            time_percentile:
+              type: number
+              format: float
+              example: 75.5
+    responses:
+      200:
+        description: Attempt completed
+        schema:
+          type: object
+          properties:
+            attempt:
+              type: object
+            message:
+              type: string
+      400:
+        description: Missing attempt_id
+      404:
+        description: Attempt not found
+    """
     payload = request.get_json(silent=True) or {}
     attempt_id = payload.get("attempt_id")
 
@@ -55,10 +141,52 @@ def complete_attempt():
 
 @bp.get("/history")
 def attempt_history():
+    """
+    Get attempt history
+    ---
+    tags:
+      - Attempts
+    parameters:
+      - in: query
+        name: user_id
+        type: integer
+        required: false
+        description: Filter by user ID
+    responses:
+      200:
+        description: List of attempts
+        schema:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  user_id:
+                    type: integer
+                  problem_id:
+                    type: integer
+                  started_at:
+                    type: string
+                    format: date-time
+                  ended_at:
+                    type: string
+                    format: date-time
+                  duration_sec:
+                    type: integer
+                  result:
+                    type: string
+            total:
+              type: integer
+    """
     user_id = request.args.get("user_id", type=int)
     if user_id:
         attempts = Attempt.query.filter_by(user_id=user_id).all()
     else:
         attempts = Attempt.query.all()
     return jsonify({"items": [a.to_dict() for a in attempts], "total": len(attempts)})
+
 
