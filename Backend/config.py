@@ -12,21 +12,26 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
     JSON_SORT_KEYS = False
 
-    # CORS (permissive for now; lock down later)
-    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
+    # CORS
+    _CORS_ORIGINS_STR = os.getenv("CORS_ORIGINS", "*")
+    if _CORS_ORIGINS_STR == "*":
+        CORS_ORIGINS = "*"
+    else:
+        CORS_ORIGINS = [origin.strip() for origin in _CORS_ORIGINS_STR.split(",") if origin.strip()]
 
     # JWT Configuration
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", SECRET_KEY)
-    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600))  # 1 hour
-    JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 86400 * 7))  # 7 days
+    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600))
+    JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 86400 * 7))
     JWT_ALGORITHM = "HS256"
+    JWT_TOKEN_LOCATION = ["headers"]
 
     # Database
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
         "postgresql://cs2025:cs2025pass@localhost:5432/cs2025"
     )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 
 class TestConfig(Config):

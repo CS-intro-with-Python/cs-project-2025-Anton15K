@@ -59,7 +59,7 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     app.config["SWAGGER"] = {"title": "Codeforces Training API", "uiversion": 3}
 
     # Init extensions
-    cors.init_app(app, resources={r"*": {"origins": app.config.get("CORS_ORIGINS", "*")}})
+    cors.init_app(app, resources={r"*": {"origins": app.config.get("CORS_ORIGINS", "*")}}, supports_credentials=True)
     login_manager.init_app(app)
     db.init_app(app)
 
