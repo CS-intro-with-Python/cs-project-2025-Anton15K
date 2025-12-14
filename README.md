@@ -180,9 +180,9 @@ After each solve, the problem's estimated rating is updated:
 
 The timer system includes Codeforces submission verification:
 
-1. **On Start**: Checks if user already solved the problem on CF → blocks if yes
-2. **On Complete**: Verifies that user submitted a correct solution *after* the timer started
-3. **Checks last 50 submissions** to avoid missing older submissions
+- **On Start**: Checks if user already solved the problem on CF → blocks if yes
+- **On Complete**: Verifies that user submitted a correct solution *after* the timer started
+- **Checks last 50 submissions** to avoid missing older submissions
 
 ## Testing
 
@@ -196,31 +196,31 @@ python3 scripts/test_user_requests.py
 ### GitHub Actions CI
 
 The `backend-smoke.yml` workflow runs on every push:
-1. Builds Docker containers
-2. Waits for health check
-3. Runs all API smoke tests
+- Builds Docker containers
+- Waits for health check
+- Runs all API smoke tests
 
 ## Success Criteria
 
 ### Authentication & User Management
-- [ ] Users can register with username, email, password, and optional CF handle
-- [ ] Users can log in and maintain session across pages
+- Users can register with username, email, password, and optional CF handle
+- Users can log in and maintain session across pages
 
 ### Problem Management
-- [ ] Problems can be added with Codeforces contest ID and problem index
-- [ ] System automatically estimates problem difficulty from CF solver data
-- [ ] Problem list shows all problems with their estimated ratings
+- Problems can be added with Codeforces contest ID and problem index
+- System automatically estimates problem difficulty from CF solver data
+- Problem list shows all problems with their estimated ratings
 
 ### Timer & Attempt Tracking
-- [ ] Users can start a timed attempt for any problem
-- [ ] Attempt history shows duration and performance metrics
+- Users can start a timed attempt for any problem
+- Attempt history shows duration and performance metrics
 
 ### Codeforces Verification
-- [ ] System verifies submissions via CF API on attempt completion
-- [ ] User receives feedback on verification status
+- System verifies submissions via CF API on attempt completion
+- User receives feedback on verification status
 
 ### Rating System
-- [ ] Performance rating calculated based on solve time vs other solvers
-- [ ] Rating delta applied to user rating after each solved attempt
+- Performance rating calculated based on solve time vs other solvers
+- Rating delta applied to user rating after each solved attempt
 
 
