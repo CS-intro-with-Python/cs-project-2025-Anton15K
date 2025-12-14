@@ -15,3 +15,5 @@ class Attempt:
     result: Optional[str] = None  # e.g., "solved", "failed", "timeout"
     performance_rating: Optional[int] = None
     time_percentile: Optional[float] = None
+
+# =============================================================================
