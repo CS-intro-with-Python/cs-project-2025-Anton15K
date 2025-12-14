@@ -117,7 +117,7 @@ def get_problem(problem_id: int):
       404:
         description: Problem not found
     """
-    problem = Problem.query.get(problem_id)
+    problem = db.session.get(Problem, problem_id)
     if not problem:
         return jsonify({"error": "Problem not found"}), 404
     return jsonify(problem.to_dict())
@@ -152,7 +152,7 @@ def estimate_problem(problem_id: int):
       404:
         description: Problem not found
     """
-    problem = Problem.query.get(problem_id)
+    problem = db.session.get(Problem, problem_id)
     if not problem:
         return jsonify({"error": "Problem not found"}), 404
 
@@ -229,7 +229,7 @@ def estimate_from_codeforces(problem_id: int):
     estimated = estimate_problem_difficulty(solver_data["solvers"])
 
     # Update problem in database if it exists
-    problem = Problem.query.get(problem_id)
+    problem = db.session.get(Problem, problem_id)
     if problem:
         problem.estimated_rating = estimated
         problem.initial_estimated_rating = estimated

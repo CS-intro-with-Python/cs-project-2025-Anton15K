@@ -127,7 +127,7 @@ def token_required(f):
         
         # Get user from database
         from .models import User
-        user = User.query.get(int(payload["sub"]))
+        user = db.session.get(User, int(payload["sub"]))
         if not user:
             return jsonify({"error": "User not found"}), 401
         

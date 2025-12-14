@@ -1,6 +1,6 @@
 # SQLAlchemy ORM models for the database tables.
 
-from datetime import datetime
+from datetime import datetime, timezone
 from ..extensions import db
 
 
@@ -13,7 +13,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     cf_handle = db.Column(db.String(100))
     rating = db.Column(db.Integer, default=1200)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     attempts = db.relationship('Attempt', backref='user', lazy=True)
     rating_adjustments = db.relationship('RatingAdjustment', backref='user', lazy=True)
@@ -47,7 +47,7 @@ class Problem(db.Model):
     problem_index = db.Column(db.String(10))
     estimated_rating = db.Column(db.Integer, default=1200)
     initial_estimated_rating = db.Column(db.Integer)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     attempts = db.relationship('Attempt', backref='problem', lazy=True)
 
@@ -70,7 +70,7 @@ class Attempt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     problem_id = db.Column(db.Integer, db.ForeignKey('problems.id'), nullable=False)
-    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    started_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     ended_at = db.Column(db.DateTime)
     duration_sec = db.Column(db.Integer)
     result = db.Column(db.String(50))
@@ -99,7 +99,7 @@ class RatingAdjustment(db.Model):
     problem_id = db.Column(db.Integer, db.ForeignKey('problems.id'), nullable=False)
     delta = db.Column(db.Integer, nullable=False)
     note = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
         return {

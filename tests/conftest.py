@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from Backend.app import create_app
 from Backend.extensions import db as _db

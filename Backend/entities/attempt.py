@@ -16,4 +16,3 @@ class Attempt:
     performance_rating: Optional[int] = None
     time_percentile: Optional[float] = None
 
-# =============================================================================

@@ -1,6 +1,6 @@
 # Frontend views blueprint with page rendering routes.
 
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -20,7 +20,7 @@ def get_current_user():
     """Get the current logged-in user from session."""
     user_id = session.get("user_id")
     if user_id:
-        return User.query.get(user_id)
+        return db.session.get(User, user_id)
     return None
 
 
@@ -140,7 +140,7 @@ def add_problem():
 
 @bp.route("/problems/<int:problem_id>")
 def problem_detail(problem_id):
-    problem = Problem.query.get_or_404(problem_id)
+    problem = db.get_or_404(Problem, problem_id)
     attempts = Attempt.query.filter_by(problem_id=problem_id).order_by(Attempt.started_at.desc()).limit(10).all()
     return render_template("problems/detail.html", problem=problem, attempts=attempts)
 
@@ -168,7 +168,7 @@ def start_attempt(problem_id):
         flash("Please login to start an attempt", "error")
         return redirect(url_for("views.login"))
     
-    problem = Problem.query.get_or_404(problem_id)
+    problem = db.get_or_404(Problem, problem_id)
     
     # Check for existing active attempt
     active = Attempt.query.filter_by(user_id=user.id, result=None).first()
@@ -186,7 +186,7 @@ def start_attempt(problem_id):
     attempt = Attempt(
         user_id=user.id,
         problem_id=problem_id,
-        started_at=datetime.utcnow(),
+        started_at=datetime.now(timezone.utc),
     )
     db.session.add(attempt)
     db.session.commit()
@@ -196,12 +196,12 @@ def start_attempt(problem_id):
 
 @bp.route("/attempts/<int:attempt_id>/complete", methods=["POST"])
 def complete_attempt(attempt_id):
-    attempt = Attempt.query.get_or_404(attempt_id)
-    user = User.query.get(attempt.user_id)
-    problem = Problem.query.get(attempt.problem_id)
+    attempt = db.get_or_404(Attempt, attempt_id)
+    user = db.session.get(User, attempt.user_id)
+    problem = db.session.get(Problem, attempt.problem_id)
     result = request.form.get("result", "solved")
     
-    attempt.ended_at = datetime.utcnow()
+    attempt.ended_at = datetime.now(timezone.utc)
     attempt.result = result
     if attempt.started_at:
         attempt.duration_sec = int((attempt.ended_at - attempt.started_at).total_seconds())
