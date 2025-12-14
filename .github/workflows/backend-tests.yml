@@ -51,6 +51,7 @@ jobs:
         DATABASE_URL: postgresql://cs2025:cs2025pass@localhost:5432/cs2025
         SECRET_KEY: test-secret
         FLASK_ENV: testing
+        PYTHONPATH: .
       run: |
         pytest tests/
 
