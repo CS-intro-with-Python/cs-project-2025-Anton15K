@@ -5,24 +5,17 @@ from functools import wraps
 import jwt
 from flask import current_app, jsonify, request, g
 from flask_cors import CORS
-from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
-# CORS for browser clients (permissive for now)
+# CORS for browser clients (permissive by default now)
 cors = CORS()
-
-# Session-based auth manager (future use)
-login_manager = LoginManager()
-login_manager.login_view = "auth_login"  # Endpoint name placeholder
 
 # SQLAlchemy for database ORM
 db = SQLAlchemy()
 
 
-# ============================================================================
-# JWT Utility Functions
-# ============================================================================
 
+# JWT Utility Functions
 def create_access_token(user_id: int, additional_claims: dict = None) -> str:
     """
     Create a JWT access token for the given user.

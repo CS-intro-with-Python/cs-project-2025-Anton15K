@@ -3,7 +3,7 @@ from flask import Flask
 from flasgger import Swagger
 
 from .config import Config
-from .extensions import cors, login_manager, db
+from .extensions import cors, db
 
 
 API_PREFIX = "/api/v1"
@@ -60,7 +60,6 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
 
     # Init extensions
     cors.init_app(app, resources={r"*": {"origins": app.config.get("CORS_ORIGINS", "*")}}, supports_credentials=True)
-    login_manager.init_app(app)
     db.init_app(app)
 
     # Initialize Swagger
@@ -70,10 +69,6 @@ def create_app(config_object: type[Config] | None = None) -> Flask:
     from . import models
     from .models import User
 
-    # Flask-Login user loader
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
 
     # Register frontend views blueprint
     from .views import bp as views_bp

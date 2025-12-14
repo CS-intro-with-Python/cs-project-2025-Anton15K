@@ -4,12 +4,12 @@ import os
 
 
 class Config:
-    ENV = os.getenv("FLASK_ENV", "development")
+    ENV = os.getenv("FLASK_ENV", "productions")
     DEBUG = ENV != "production"
-    TESTING = False
+    TESTING = True
 
     # Flask
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
+    SECRET_KEY = os.getenv("SECRET_KEY", "1234567890")
     JSON_SORT_KEYS = False
 
     # CORS
