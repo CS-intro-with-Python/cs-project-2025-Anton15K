@@ -65,7 +65,7 @@ scripts/
     test_user_requests.py     # API smoke tests
 
 .github/workflows/
-    backend-smoke.yml         # CI pipeline for testing
+    backend-test.yml         # CI pipeline for testing
 ```
 
 ## Local Setup

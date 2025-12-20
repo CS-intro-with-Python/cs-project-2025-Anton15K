@@ -32,11 +32,6 @@ def clean_db(db):
     meta = db.metadata
     for table in reversed(meta.sorted_tables):
         continue
-        # We will use db.session.execute to clean
-        # But for PostgreSQL with foreign keys, CASCADE is needed or order matters.
-        # simpler: db.drop_all() create_all() is safest but slow.
-        # Let's try drop/create for function scope.
-    
     db.drop_all()
     db.create_all()
     yield
